@@ -1,5 +1,6 @@
 package com.rest.jwt.service;
 
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.internal.verification.Times;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -41,22 +43,18 @@ public class EtudiantServiceTest {
 		when(etudiantRepo.findAll()).thenReturn(fluxEtud);
 		//Preparation données pour l'ajout
 		when(etudiantRepo.insert(any(Etudiant.class))).thenReturn(Mono.just(et2));
+		//modification
+		when(etudiantRepo.save(eq(et))).thenReturn(Mono.just(et2));
 	}
 	
 	@Test
-	public void Test_getListeOK1() {
+	public void Test_getListeOK() {
 		StepVerifier.create(etudServ.getListe()).
 		expectNext(et).
 		verifyComplete();
 		verify(etudiantRepo).findAll();
 	}
 	
-	@Test
-	public void Test_getListeOK() {
-		StepVerifier.create(fluxEtud).
-		expectNext(et).
-		verifyComplete();
-	}
 	
 	@Test
 	public void test_ajouterEtudiant() {
@@ -64,7 +62,14 @@ public class EtudiantServiceTest {
 		expectNext(et2).
 		verifyComplete();
 		verify(etudiantRepo).insert(eq(et));
-		
+	}
+	
+	@Test
+	public void test_modifierEtudiant() {
+		StepVerifier.create(etudiantRepo.save(et)).
+		expectNext(et2).
+		verifyComplete();
+		verify(etudiantRepo,atLeast(0)).save(eq(et));
 	}
 	
 }
